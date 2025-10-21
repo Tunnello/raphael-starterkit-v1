@@ -4,10 +4,13 @@ import { createClient } from '@/utils/supabase/server';
 // Get specific batch with pagination by generation rounds
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: Promise<{ params: { id: string } }>
 ) {
   try {
     const supabase = await createClient();
+
+    // Await the params object
+    const { params } = await context;
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -16,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const batchId = context.params.id;
+    const batchId = params.id;
     const searchParams = new URL(request.url).searchParams;
     const round = parseInt(searchParams.get('round') || '1');
 
@@ -101,7 +104,7 @@ export async function GET(
     // Transform data to match frontend expectations with validation
     console.log('API Debug - Raw names data sample:', names?.slice(0, 2));
     
-    const transformedNames = (names || []).map((name, index) => {
+    const transformedNames = (names || []).map((name: any, index: number) => {
       const transformed = {
         chinese: name.chinese_name || '',
         pinyin: name.pinyin || '',
@@ -120,7 +123,7 @@ export async function GET(
       }
       
       return transformed;
-    }).filter(name => name.chinese); // Filter out invalid names
+    }).filter((name: any) => name.chinese); // Filter out invalid names
     
     console.log('API Debug - Final transformed names count:', transformedNames.length);
 
