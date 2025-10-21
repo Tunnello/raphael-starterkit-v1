@@ -106,6 +106,11 @@ export default function ResultsPage() {
   // Save current state to sessionStorage when data changes
   useEffect(() => {
     if (isDataLoaded && generatedNames.length > 0) {
+      // Ensure currentFormData is not null before assigning it to sessionData
+      if (!currentFormData) {
+        throw new Error('FormData is null');
+      }
+
       const sessionData: SessionData = {
         names: generatedNames,
         formData: currentFormData,
